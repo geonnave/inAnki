@@ -141,7 +141,7 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
     css: `
 .card {
   font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
-  font-size: 18px;
+  font-size: 22px;
   text-align: center;
   color: #1a1a1a;
   background-color: #ffffff;
@@ -149,14 +149,14 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
   line-height: 1.6;
 }
 .translations {
-  font-size: 20px;
+  font-size: 24px;
   margin-bottom: 16px;
 }
 .translation-line {
   margin: 4px 0;
 }
 .example {
-  font-size: 15px;
+  font-size: 18px;
   color: #555;
   border-top: 1px solid #e0e0e0;
   padding-top: 12px;
@@ -166,16 +166,16 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
 .conj-table {
   margin: 0 auto;
   border-collapse: collapse;
-  font-size: 18px;
+  font-size: 22px;
 }
 .conj-table td {
-  padding: 4px 12px;
+  padding: 6px 14px;
   text-align: left;
 }
 .conj-pronoun {
   color: #888;
   text-align: right;
-  font-size: 15px;
+  font-size: 22px;
   padding-right: 10px;
 }
 .conj-form {
