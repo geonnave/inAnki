@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { saveDeck } from '@/lib/storage';
 
 interface Props {
@@ -11,15 +11,17 @@ interface Props {
 }
 
 export default function DeckSelector({ decks, selected, onSelect, onDecksChange }: Props) {
-  const [newDeck, setNewDeck] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [hasContent, setHasContent] = useState(false);
 
   function handleAdd() {
-    const name = newDeck.trim();
+    const name = inputRef.current?.value.trim() ?? '';
     if (!name) return;
     saveDeck(name);
     onDecksChange();
     onSelect(name);
-    setNewDeck('');
+    if (inputRef.current) inputRef.current.value = '';
+    setHasContent(false);
   }
 
   return (
@@ -42,16 +44,16 @@ export default function DeckSelector({ decks, selected, onSelect, onDecksChange 
       </div>
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
-          value={newDeck}
-          onChange={(e) => setNewDeck(e.target.value)}
+          onChange={(e) => setHasContent(e.target.value.trim().length > 0)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder="New deck name..."
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         <button
           onClick={handleAdd}
-          disabled={!newDeck.trim()}
+          disabled={!hasContent}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-indigo-700 transition-colors"
         >
           Add

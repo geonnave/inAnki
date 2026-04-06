@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Card } from '@/lib/types';
 
@@ -10,13 +10,15 @@ interface Props {
 }
 
 export default function WordCardForm({ deckName, onAdd }: Props) {
-  const [word, setWord] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [hasContent, setHasContent] = useState(false);
   const [preview, setPreview] = useState<{ front: string; back: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   async function handleEnrich() {
-    if (!word.trim()) return;
+    const word = inputRef.current?.value.trim() ?? '';
+    if (!word) return;
     setLoading(true);
     setError('');
     setPreview(null);
@@ -24,7 +26,7 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
       const res = await fetch('/api/enrich', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word }),
+        body: JSON.stringify({ word: inputRef.current?.value.trim() }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -46,7 +48,8 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
       back: preview.back,
       createdAt: Date.now(),
     });
-    setWord('');
+    if (inputRef.current) inputRef.current.value = '';
+    setHasContent(false);
     setPreview(null);
   }
 
@@ -54,9 +57,9 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
     <div className="space-y-4">
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
-          value={word}
-          onChange={(e) => setWord(e.target.value)}
+          onChange={(e) => setHasContent(e.target.value.trim().length > 0)}
           onKeyDown={(e) => e.key === 'Enter' && handleEnrich()}
           placeholder="French word or expression..."
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -64,7 +67,7 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
         />
         <button
           onClick={handleEnrich}
-          disabled={!word.trim() || loading}
+          disabled={!hasContent || loading}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-indigo-700 transition-colors"
         >
           {loading ? '...' : 'Enrich'}

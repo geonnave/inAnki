@@ -50,7 +50,7 @@ function fieldChecksum(str: string): number {
 
 export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer> {
   const wasmBinary = readFileSync(join(process.cwd(), 'public/sql-wasm.wasm'));
-  const SQL = await initSqlJs({ wasmBinary });
+  const SQL = await initSqlJs({ wasmBinary: wasmBinary.buffer as ArrayBuffer });
   const db = new SQL.Database();
 
   const deckId = Date.now();
