@@ -15,11 +15,13 @@ interface Props {
 export default function PhotoCardForm({ deckName, onAdd }: Props) {
   const [mode, setMode] = useState<PhotoMode>('conjugation');
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const scanning = progress !== null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -45,17 +47,29 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
 
   async function handleScan() {
     if (!imageDataUrl) return;
-    setScanning(true);
     setError('');
     setResult(null);
+
     try {
-      const res = await fetch('/api/scan-conjugation', {
+      setProgress('Analysing photo...');
+      const detectRes = await fetch('/api/detect-verb', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageDataUrl }),
       });
-      const data = await res.json();
+      const detected = await detectRes.json();
+      if (detected.error) throw new Error(detected.error);
+
+      setProgress(`Found "${detected.verb}" — fetching conjugations...`);
+      const conjugateRes = await fetch('/api/scan-conjugation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verb: detected.verb, tenses: detected.tenses }),
+      });
+      const data = await conjugateRes.json();
       if (data.error) throw new Error(data.error);
+
+      setProgress('Building cards...');
       const initialChecked: Record<string, boolean> = {};
       data.tenses.forEach((t: TenseResult) => { initialChecked[t.tense] = true; });
       setResult(data);
@@ -63,7 +77,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
-      setScanning(false);
+      setProgress(null);
     }
   }
 
@@ -150,14 +164,23 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
                 </button>
               </div>
 
-              {!result && (
+              {!result && !scanning && (
                 <button
                   onClick={handleScan}
-                  disabled={scanning}
-                  className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium disabled:opacity-50 hover:bg-indigo-700 transition-colors"
+                  className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
                 >
-                  {scanning ? 'Scanning...' : 'Scan conjugations'}
+                  Scan conjugations
                 </button>
+              )}
+
+              {scanning && progress && (
+                <div className="flex items-center gap-2 text-sm text-indigo-600 py-1">
+                  <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  {progress}
+                </div>
               )}
             </div>
           )}
