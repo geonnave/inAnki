@@ -239,9 +239,8 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
     const noteId = toAnkiId(card.createdAt, 0);
     const cardId = toAnkiId(card.createdAt, 1);
 
-    let backContent = card.type === 'photo'
-      ? formatConjugationAsHtml(card.back)
-      : formatBackAsHtml(card.back);
+    let backContent = card.backHtml
+      ?? (card.type === 'photo' ? formatConjugationAsHtml(card.back) : formatBackAsHtml(card.back));
     if (card.imageDataUrl) {
       const mediaFilename = `${mediaIndex}.jpg`;
       const base64 = card.imageDataUrl.split(',')[1];

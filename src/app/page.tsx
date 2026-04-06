@@ -23,6 +23,11 @@ export default function Home() {
     if (selectedDeck) setCards(getCardsForDeck(selectedDeck));
   }
 
+  function handleSelect(deck: string) {
+    setSelectedDeck(deck);
+    setDecks(getDecks());
+  }
+
   useEffect(() => {
     const d = getDecks();
     setDecks(d);
@@ -84,7 +89,7 @@ export default function Home() {
         <DeckSelector
           decks={decks}
           selected={selectedDeck}
-          onSelect={(d) => { setSelectedDeck(d); }}
+          onSelect={handleSelect}
           onDecksChange={reload}
         />
 

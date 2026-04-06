@@ -23,7 +23,9 @@ export default function CardQueue({ cards, onDelete, onExport, exporting }: Prop
           <div key={card.id} className="border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3 bg-white">
             <div className="flex-1 min-w-0">
               <p className="font-medium text-gray-900 truncate">{card.front}</p>
-              <p className="text-sm text-gray-500 truncate">{card.back.split('\n')[0]}</p>
+              <p className="text-sm text-gray-500 truncate">
+                {card.back.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().split('\n')[0]}
+              </p>
             </div>
             <button
               onClick={() => onDelete(card.id)}

@@ -4,6 +4,7 @@ export interface Card {
   deckName: string;
   front: string;
   back: string;
+  backHtml?: string;
   imageDataUrl?: string;
   createdAt: number;
   tags?: string[];
