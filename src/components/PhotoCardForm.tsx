@@ -15,13 +15,12 @@ interface Props {
 export default function PhotoCardForm({ deckName, onAdd }: Props) {
   const [mode, setMode] = useState<PhotoMode>('conjugation');
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
-  const [progress, setProgress] = useState<string | null>(null);
+  const [log, setLog] = useState<{ msg: string; secs?: number; done: boolean }[]>([]);
+  const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const scanning = progress !== null;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -49,9 +48,18 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     if (!imageDataUrl) return;
     setError('');
     setResult(null);
+    setLog([]);
+    setScanning(true);
+
+    const addLog = (msg: string) =>
+      setLog((prev) => [...prev, { msg, done: false }]);
+
+    const completeLog = (secs: number) =>
+      setLog((prev) => prev.map((e, i) => i === prev.length - 1 ? { ...e, done: true, secs } : e));
 
     try {
-      setProgress('Analysing photo...');
+      let t = Date.now();
+      addLog('Analysing photo...');
       const detectRes = await fetch('/api/detect-verb', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,8 +67,10 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
       });
       const detected = await detectRes.json();
       if (detected.error) throw new Error(detected.error);
+      completeLog(Math.round((Date.now() - t) / 100) / 10);
 
-      setProgress(`Found "${detected.verb}" — fetching conjugations...`);
+      t = Date.now();
+      addLog(`Found "${detected.verb}" — fetching conjugations...`);
       const conjugateRes = await fetch('/api/scan-conjugation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -68,8 +78,11 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
       });
       const data = await conjugateRes.json();
       if (data.error) throw new Error(data.error);
+      completeLog(Math.round((Date.now() - t) / 100) / 10);
 
-      setProgress('Building cards...');
+      addLog(`${data.tenses.length} tenses ready`);
+      completeLog(0);
+
       const initialChecked: Record<string, boolean> = {};
       data.tenses.forEach((t: TenseResult) => { initialChecked[t.tense] = true; });
       setResult(data);
@@ -77,7 +90,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
-      setProgress(null);
+      setScanning(false);
     }
   }
 
@@ -99,6 +112,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     setImageDataUrl(null);
     setResult(null);
     setChecked({});
+    setLog([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
@@ -164,7 +178,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
                 </button>
               </div>
 
-              {!result && !scanning && (
+              {!result && !scanning && log.length === 0 && (
                 <button
                   onClick={handleScan}
                   className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
@@ -173,13 +187,24 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
                 </button>
               )}
 
-              {scanning && progress && (
-                <div className="flex items-center gap-2 text-sm text-indigo-600 py-1">
-                  <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                  </svg>
-                  {progress}
+              {log.length > 0 && (
+                <div className="rounded-xl bg-gray-950 px-4 py-3 space-y-1.5 font-mono text-xs">
+                  {log.map((entry, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      {!entry.done && scanning ? (
+                        <svg className="animate-spin w-3 h-3 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                      ) : (
+                        <span className="text-green-400 shrink-0">✓</span>
+                      )}
+                      <span className="text-gray-200">{entry.msg}</span>
+                      {entry.done && entry.secs !== undefined && entry.secs > 0 && (
+                        <span className="text-gray-500 ml-auto">{entry.secs}s</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
