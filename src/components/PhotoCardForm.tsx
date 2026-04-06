@@ -106,6 +106,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
         front: `${result.verb} — ${t.tense}`,
         back: t.conjugations.join('\n'),
         createdAt: now + i,
+        tags: [result.verb, t.tense],
       }));
     if (cards.length === 0) return;
     onAdd(cards);

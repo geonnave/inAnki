@@ -252,10 +252,13 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
 
     const flds = `${card.front}${FIELD_SEP}${backContent}`;
     const csum = fieldChecksum(card.front);
+    const tagsStr = card.tags?.length
+      ? ' ' + card.tags.map((t) => t.replace(/ /g, '_')).join(' ') + ' '
+      : '';
 
     db.run(
       `INSERT INTO notes VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
-      [noteId, card.id, modelId, ts, -1, '', flds, card.front, csum, 0, '']
+      [noteId, card.id, modelId, ts, -1, tagsStr, flds, card.front, csum, 0, '']
     );
 
     db.run(

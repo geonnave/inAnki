@@ -6,4 +6,5 @@ export interface Card {
   back: string;
   imageDataUrl?: string;
   createdAt: number;
+  tags?: string[];
 }
