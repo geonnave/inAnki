@@ -25,7 +25,7 @@ Word: "${word.trim()}"
 Respond with ONLY a JSON object (no markdown, no explanation):
 {
   "front": "<the French word or expression>",
-  "back": "EN: <English translation>\\nPT-BR: <Portuguese (BR) translation>\\n\\nExample: <one short example sentence in French with English translation in parentheses>"
+  "back": "🇺🇸 <English translation>\\n🇧🇷 <Portuguese (BR) translation>\\n\\nExample: <one short example sentence in French with English translation in parentheses>"
 }`,
         },
       ],
