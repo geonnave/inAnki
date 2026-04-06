@@ -9,7 +9,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No deck or cards provided' }, { status: 400 });
   }
 
-  const buffer = await buildApkg(deckName, cards);
+  let buffer;
+  try {
+    buffer = await buildApkg(deckName, cards);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[export] buildApkg error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 
   return new NextResponse(buffer as unknown as BodyInit, {
     headers: {

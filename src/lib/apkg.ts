@@ -1,5 +1,7 @@
 import initSqlJs from 'sql.js';
 import JSZip from 'jszip';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { Card } from './types';
 
 // Anki uses a field separator of 0x1f
@@ -9,9 +11,32 @@ function now() {
   return Math.floor(Date.now() / 1000);
 }
 
-// Stable numeric ID from a UUID string (take first 13 hex digits → number)
-function uuidToId(uuid: string): number {
-  return parseInt(uuid.replace(/-/g, '').slice(0, 13), 16);
+// Derive a stable Anki-compatible ID (millisecond timestamp range) from a UUID.
+// We take 10 decimal digits of the UUID's numeric hash and clamp it to a valid
+// ms-since-epoch range (2000–2100) so Anki doesn't flag it as a future timestamp.
+function uuidToAnkiId(uuid: string, offset = 0): number {
+  const hex = uuid.replace(/-/g, '');
+  // Use middle 10 hex digits to get a number in ~0–1e12 range
+  const raw = parseInt(hex.slice(8, 18), 16); // max ~1.099e12
+  // Clamp into 2000-01-01 (946684800000ms) to 2099-12-31 (4102444800000ms)
+  const MIN = 946684800000;
+  const MAX = 4102444800000;
+  return MIN + (raw % (MAX - MIN)) + offset;
+}
+
+// Convert plain-text back (with \n) into structured HTML for Anki rendering.
+// Expected format:
+//   🇺🇸 translation\n🇧🇷 translation\n\nExample: sentence
+function formatBackAsHtml(back: string): string {
+  const [translationBlock, ...rest] = back.split(/\n\nExample:/i);
+  const translationLines = translationBlock.split('\n').filter(Boolean);
+  const translationsHtml = translationLines
+    .map((line) => `<div class="translation-line">${line}</div>`)
+    .join('');
+  const exampleHtml = rest.length
+    ? `<div class="example"><strong>Example:</strong> ${rest.join('').trim()}</div>`
+    : '';
+  return `<div class="translations">${translationsHtml}</div>${exampleHtml}`;
 }
 
 // Simple checksum used by Anki for the sfld column
@@ -24,7 +49,8 @@ function fieldChecksum(str: string): number {
 }
 
 export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer> {
-  const SQL = await initSqlJs();
+  const wasmBinary = readFileSync(join(process.cwd(), 'public/sql-wasm.wasm'));
+  const SQL = await initSqlJs({ wasmBinary });
   const db = new SQL.Database();
 
   const deckId = Date.now();
@@ -90,7 +116,32 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
       { name: 'Front', ord: 0, sticky: false, rtl: false, font: 'Arial', size: 20 },
       { name: 'Back', ord: 1, sticky: false, rtl: false, font: 'Arial', size: 20 },
     ],
-    css: '.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }',
+    css: `
+.card {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+  text-align: center;
+  color: #1a1a1a;
+  background-color: #ffffff;
+  padding: 20px;
+  line-height: 1.6;
+}
+.translations {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+.translation-line {
+  margin: 4px 0;
+}
+.example {
+  font-size: 15px;
+  color: #555;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
+  margin-top: 12px;
+  font-style: italic;
+}
+`,
     latexPre: '',
     latexPost: '',
     vers: [],
@@ -144,16 +195,16 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
   let mediaIndex = 0;
 
   for (const card of cards) {
-    const noteId = uuidToId(card.id);
-    const cardId = noteId + 1;
+    const noteId = uuidToAnkiId(card.id, 0);
+    const cardId = uuidToAnkiId(card.id, 1);
 
-    let backContent = card.back;
+    let backContent = formatBackAsHtml(card.back);
     if (card.imageDataUrl) {
       const mediaFilename = `${mediaIndex}.jpg`;
       const base64 = card.imageDataUrl.split(',')[1];
       mediaMap[mediaIndex.toString()] = Buffer.from(base64, 'base64');
       mediaIndex++;
-      backContent = `<img src="${mediaFilename}" /><br/>${card.back}`;
+      backContent = `<img src="${mediaFilename}" /><br/>` + backContent;
     }
 
     const flds = `${card.front}${FIELD_SEP}${backContent}`;
