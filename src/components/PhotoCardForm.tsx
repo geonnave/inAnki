@@ -69,15 +69,16 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
 
   function handleAddCards() {
     if (!result) return;
+    const now = Date.now();
     const cards: Card[] = result.tenses
       .filter((t) => checked[t.tense])
-      .map((t) => ({
+      .map((t, i) => ({
         id: uuidv4(),
         type: 'photo' as const,
         deckName,
         front: `${result.verb} — ${t.tense}`,
         back: t.conjugations.join('\n'),
-        createdAt: Date.now(),
+        createdAt: now + i,
       }));
     if (cards.length === 0) return;
     onAdd(cards);

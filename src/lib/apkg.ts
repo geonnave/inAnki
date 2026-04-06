@@ -11,17 +11,11 @@ function now() {
   return Math.floor(Date.now() / 1000);
 }
 
-// Derive a stable Anki-compatible ID (millisecond timestamp range) from a UUID.
-// We take 10 decimal digits of the UUID's numeric hash and clamp it to a valid
-// ms-since-epoch range (2000–2100) so Anki doesn't flag it as a future timestamp.
-function uuidToAnkiId(uuid: string, offset = 0): number {
-  const hex = uuid.replace(/-/g, '');
-  // Use middle 10 hex digits to get a number in ~0–1e12 range
-  const raw = parseInt(hex.slice(8, 18), 16); // max ~1.099e12
-  // Clamp into 2000-01-01 (946684800000ms) to 2099-12-31 (4102444800000ms)
-  const MIN = 946684800000;
-  const MAX = 4102444800000;
-  return MIN + (raw % (MAX - MIN)) + offset;
+// Use the card's creation timestamp as the Anki note ID (ms since epoch).
+// createdAt is always a real past timestamp so Anki won't warn about future dates.
+// offset=1 for the card ID to guarantee note ID ≠ card ID.
+function toAnkiId(createdAt: number, offset = 0): number {
+  return createdAt + offset;
 }
 
 // Convert plain-text back (with \n) into structured HTML for Anki rendering.
@@ -37,6 +31,18 @@ function formatBackAsHtml(back: string): string {
     ? `<div class="example"><strong>Example:</strong> ${rest.join('').trim()}</div>`
     : '';
   return `<div class="translations">${translationsHtml}</div>${exampleHtml}`;
+}
+
+// Format conjugation back: each line is "pronoun form", render as two-column table
+function formatConjugationAsHtml(back: string): string {
+  const rows = back.split('\n').filter(Boolean).map((line) => {
+    const spaceIdx = line.indexOf(' ');
+    if (spaceIdx === -1) return `<tr><td class="conj-pronoun"></td><td class="conj-form">${line}</td></tr>`;
+    const pronoun = line.slice(0, spaceIdx);
+    const form = line.slice(spaceIdx + 1);
+    return `<tr><td class="conj-pronoun">${pronoun}</td><td class="conj-form">${form}</td></tr>`;
+  }).join('');
+  return `<table class="conj-table">${rows}</table>`;
 }
 
 // Simple checksum used by Anki for the sfld column
@@ -141,6 +147,25 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
   margin-top: 12px;
   font-style: italic;
 }
+.conj-table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  font-size: 18px;
+}
+.conj-table td {
+  padding: 4px 12px;
+  text-align: left;
+}
+.conj-pronoun {
+  color: #888;
+  text-align: right;
+  font-size: 15px;
+  padding-right: 10px;
+}
+.conj-form {
+  font-weight: 500;
+  color: #1a1a1a;
+}
 `,
     latexPre: '',
     latexPost: '',
@@ -195,10 +220,12 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
   let mediaIndex = 0;
 
   for (const card of cards) {
-    const noteId = uuidToAnkiId(card.id, 0);
-    const cardId = uuidToAnkiId(card.id, 1);
+    const noteId = toAnkiId(card.createdAt, 0);
+    const cardId = toAnkiId(card.createdAt, 1);
 
-    let backContent = formatBackAsHtml(card.back);
+    let backContent = card.type === 'photo'
+      ? formatConjugationAsHtml(card.back)
+      : formatBackAsHtml(card.back);
     if (card.imageDataUrl) {
       const mediaFilename = `${mediaIndex}.jpg`;
       const base64 = card.imageDataUrl.split(',')[1];
