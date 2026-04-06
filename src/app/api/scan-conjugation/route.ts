@@ -50,11 +50,41 @@ async function fetchGymglish(verb: string): Promise<Record<string, string[]>> {
 }
 
 function normalizeForm(raw: string): string {
-  return raw
-    .replace(/^il ([^/]+)\/elle \1$/, 'il/elle $1')
-    .replace(/^il ([^/]+)\/elle ([^/]+)$/, 'il/elle $1')
-    .replace(/^ils ([^/]+)\/elles \1$/, 'ils/elles $1')
-    .replace(/^ils ([^/]+)\/elles ([^/]+)$/, 'ils/elles $1');
+  // Split gymglish variants (separated by /)
+  const parts = raw.split('/').map((p) => p.trim());
+  if (parts.length === 1) return raw.trim();
+
+  const [a, b] = parts;
+
+  // "il X / elle Y" → "il/elle X" (merge pronoun, keep masculine form)
+  const ilM = a.match(/^il\s(.+)$/);
+  const elleM = b?.match(/^elle\s(.+)$/);
+  if (ilM && elleM) return `il/elle ${ilM[1]}`;
+
+  // "ils X / elles Y" → "ils/elles X"
+  const ilsM = a.match(/^ils\s(.+)$/);
+  const ellesM = b?.match(/^elles\s(.+)$/);
+  if (ilsM && ellesM) return `ils/elles ${ilsM[1]}`;
+
+  // Gender agreement on last word: "je suis allé / je suis allée" → "je suis allé(e)"
+  // "nous sommes allés / nous sommes allées" → "nous sommes allés(es)"
+  const aW = a.split(' ');
+  const bW = b?.split(' ') ?? [];
+  if (aW.length === bW.length) {
+    const diffs = aW.filter((w, i) => w !== bW[i]);
+    if (diffs.length === 1) {
+      // Only last word differs — apply (e) or (es) notation
+      const mascWord = aW[aW.length - 1];
+      const femWord = bW[bW.length - 1];
+      let merged = mascWord;
+      if (femWord === mascWord + 'e') merged = mascWord + '(e)';
+      else if (femWord === mascWord.replace(/s$/, 'es')) merged = mascWord + '(es)';
+      return [...aW.slice(0, -1), merged].join(' ');
+    }
+  }
+
+  // Fallback: take first variant (e.g. vous êtes allés/allées/allé/allée → vous êtes allés)
+  return a;
 }
 
 function matchTense(detected: string, keys: string[]): string | null {

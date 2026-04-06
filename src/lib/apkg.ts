@@ -34,12 +34,28 @@ function formatBackAsHtml(back: string): string {
 }
 
 // Format conjugation back: each line is "pronoun form", render as two-column table
+// Known pronouns ordered longest-first so greedy matching works
+const PRONOUNS = [
+  "qu'il/elle", "qu'ils/elles", "que j'", "que tu", "que nous", "que vous",
+  "il/elle", "ils/elles", "j'", "je", "tu", "nous", "vous",
+];
+
+function splitPronounAndForm(line: string): [string, string] {
+  for (const p of PRONOUNS) {
+    if (line.toLowerCase().startsWith(p.toLowerCase())) {
+      const rest = line.slice(p.length);
+      // rest starts with space (normal) or directly with the verb (elision like j'allais)
+      return [p, rest.startsWith(' ') ? rest.slice(1) : rest];
+    }
+  }
+  // Fallback: split on first space
+  const idx = line.indexOf(' ');
+  return idx === -1 ? ['', line] : [line.slice(0, idx), line.slice(idx + 1)];
+}
+
 function formatConjugationAsHtml(back: string): string {
   const rows = back.split('\n').filter(Boolean).map((line) => {
-    const spaceIdx = line.indexOf(' ');
-    if (spaceIdx === -1) return `<tr><td class="conj-pronoun"></td><td class="conj-form">${line}</td></tr>`;
-    const pronoun = line.slice(0, spaceIdx);
-    const form = line.slice(spaceIdx + 1);
+    const [pronoun, form] = splitPronounAndForm(line);
     return `<tr><td class="conj-pronoun">${pronoun}</td><td class="conj-form">${form}</td></tr>`;
   }).join('');
   return `<table class="conj-table">${rows}</table>`;
