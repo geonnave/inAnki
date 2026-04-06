@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import DeckSelector from '@/components/DeckSelector';
 import WordCardForm from '@/components/WordCardForm';
-import PhotoCardMock from '@/components/PhotoCardMock';
+import PhotoCardForm from '@/components/PhotoCardForm';
 import CardQueue from '@/components/CardQueue';
 import { Card } from '@/lib/types';
 import { getDecks, getCardsForDeck, saveCard, deleteCard } from '@/lib/storage';
@@ -34,9 +34,10 @@ export default function Home() {
     else setCards([]);
   }, [selectedDeck]);
 
-  function handleAdd(card: Card) {
-    saveCard(card);
-    setCards(getCardsForDeck(card.deckName));
+  function handleAdd(card: Card | Card[]) {
+    const toAdd = Array.isArray(card) ? card : [card];
+    toAdd.forEach(saveCard);
+    setCards(getCardsForDeck(toAdd[0].deckName));
   }
 
   function handleDelete(id: string) {
@@ -110,7 +111,7 @@ export default function Home() {
             {tab === 'word' ? (
               <WordCardForm deckName={selectedDeck} onAdd={handleAdd} />
             ) : (
-              <PhotoCardMock />
+              <PhotoCardForm deckName={selectedDeck} onAdd={handleAdd} />
             )}
 
             {/* Card queue */}
