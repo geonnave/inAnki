@@ -58,20 +58,27 @@ export default function CardQueue({ cards, onDelete, onSave, onExport, exporting
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                 />
               </div>
-              {/* Only show back editor for cards without pre-rendered HTML (i.e. not imported) */}
-              {!card.backHtml ? (
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Back</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Back</label>
+                {card.backHtml ? (
+                  <>
+                    <textarea
+                      value={card.back.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}
+                      readOnly
+                      rows={card.type === 'photo' ? 6 : 3}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-400 bg-gray-50 resize-none font-mono cursor-default"
+                    />
+                    <p className="text-xs text-gray-400 italic">Back is imported HTML — only front is editable.</p>
+                  </>
+                ) : (
                   <textarea
                     value={draftBack}
                     onChange={(e) => setDraftBack(e.target.value)}
                     rows={card.type === 'photo' ? 6 : 3}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none font-mono"
                   />
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 italic">Back is imported HTML — only front is editable.</p>
-              )}
+                )}
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleSave(card)}
@@ -92,7 +99,14 @@ export default function CardQueue({ cards, onDelete, onSave, onExport, exporting
             /* Normal row */
             <div key={card.id} className="border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3 bg-white">
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">{card.front}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900 truncate">{card.front}</p>
+                  {card.backHtml && (
+                    <span className="shrink-0 text-xs text-gray-400 border border-gray-200 rounded px-1 py-0.5 leading-none">
+                      imported
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-500 truncate">{backPreview(card)}</p>
               </div>
               <button
