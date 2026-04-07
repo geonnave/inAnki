@@ -94,11 +94,14 @@ ANTHROPIC_API_KEY=sk-ant-...
 - [x] Verb + tense tags on conjugation cards
 - [x] Import `.apkg` — parses SQLite, restores cards with original note IDs (Anki progress preserved)
 - [x] Delete deck (with inline confirmation)
+- [x] Edit existing cards inline (pencil icon; read-only back preview for imported cards)
+- [x] Imported card badge in card queue
+- [x] iOS input zoom fix (`font-size: max(16px, 1em)` in globals.css)
+- [x] Anki card dark mode CSS (`prefers-color-scheme: dark`)
 
 ## To do
 
 - [ ] Generic photo scan mode (currently shows "coming soon") — OCR arbitrary text into word cards
-- [ ] Edit existing cards (front/back) from the card queue
 - [ ] Bulk delete cards from a deck
-- [ ] Dark mode
+- [ ] Dark mode for the inanki web UI
 - [ ] PWA manifest / install-to-homescreen support
