@@ -62,7 +62,7 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
           onChange={(e) => setHasContent(e.target.value.trim().length > 0)}
           onKeyDown={(e) => e.key === 'Enter' && handleEnrich()}
           placeholder="French word or expression..."
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400"
           autoFocus
         />
         <button

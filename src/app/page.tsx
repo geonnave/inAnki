@@ -50,6 +50,11 @@ export default function Home() {
     if (selectedDeck) setCards(getCardsForDeck(selectedDeck));
   }
 
+  function handleSave(card: Card) {
+    saveCard(card);
+    if (selectedDeck) setCards(getCardsForDeck(selectedDeck));
+  }
+
   async function handleExport() {
     if (!selectedDeck || cards.length === 0) return;
     setExporting(true);
@@ -127,6 +132,7 @@ export default function Home() {
               <CardQueue
                 cards={cards}
                 onDelete={handleDelete}
+                onSave={handleSave}
                 onExport={handleExport}
                 exporting={exporting}
               />

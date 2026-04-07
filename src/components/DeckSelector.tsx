@@ -122,7 +122,7 @@ export default function DeckSelector({ decks, selected, onSelect, onDecksChange 
           onChange={(e) => setHasContent(e.target.value.trim().length > 0)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
           placeholder="New deck name..."
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
         <button
           onClick={handleAdd}
