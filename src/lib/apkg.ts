@@ -182,6 +182,22 @@ export async function buildApkg(deckName: string, cards: Card[]): Promise<Buffer
   font-weight: 500;
   color: #1a1a1a;
 }
+@media (prefers-color-scheme: dark) {
+  .card {
+    color: #e8e8e8;
+    background-color: #1a1a1a;
+  }
+  .example {
+    color: #aaa;
+    border-top-color: #333;
+  }
+  .conj-pronoun {
+    color: #888;
+  }
+  .conj-form {
+    color: #e8e8e8;
+  }
+}
 `,
     latexPre: '',
     latexPost: '',
