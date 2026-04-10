@@ -98,10 +98,10 @@ ANTHROPIC_API_KEY=sk-ant-...
 - [x] Imported card badge in card queue
 - [x] iOS input zoom fix (`font-size: max(16px, 1em)` in globals.css)
 - [x] Anki card dark mode CSS (`prefers-color-scheme: dark`)
+- [x] Generic photo scan mode — Claude vision extracts idioms/rare vocab from any French text photo, tuned for B2 PT-BR learner (strict prompt, empty result is valid)
 
 ## To do
 
-- [ ] Generic photo scan mode (currently shows "coming soon") — OCR arbitrary text into word cards
 - [ ] Bulk delete cards from a deck
 - [ ] Dark mode for the inanki web UI
 - [ ] PWA manifest / install-to-homescreen support
