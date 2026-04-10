@@ -7,26 +7,13 @@ import { Card } from '@/lib/types';
 import { getApiKey, apiFetch } from '@/lib/apikey';
 import { ScanResult, TenseResult } from '@/app/api/scan-conjugation/route';
 
-type PhotoMode = 'conjugation' | 'generic';
-
 interface Props {
+  mode: 'conjugation' | 'generic';
   deckName: string;
   onAdd: (cards: Card[]) => void;
 }
 
-export default function PhotoCardForm({ deckName, onAdd }: Props) {
-  const [mode, setMode] = useState<PhotoMode>('conjugation');
-
-  function switchMode(m: PhotoMode) {
-    setMode(m);
-    setImageDataUrl(null);
-    setResult(null);
-    setGenericCards([]);
-    setChecked({});
-    setLog([]);
-    setError('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }
+export default function PhotoCardForm({ mode, deckName, onAdd }: Props) {
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [log, setLog] = useState<{ msg: string; secs?: number; done: boolean }[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -256,21 +243,6 @@ If nothing meets the bar, return { "items": [] }.` },
 
   return (
     <div className="space-y-4">
-
-      {/* Mode toggle */}
-      <div className="flex rounded-xl border border-gray-200 overflow-hidden bg-white">
-        {(['conjugation', 'generic'] as PhotoMode[]).map((m) => (
-          <button
-            key={m}
-            onClick={() => switchMode(m)}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              mode === m ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {m === 'conjugation' ? 'Conjugation' : 'Generic'}
-          </button>
-        ))}
-      </div>
 
       {/* Shared hidden file input for both modes */}
       <input

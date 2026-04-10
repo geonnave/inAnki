@@ -9,7 +9,7 @@ import { Card } from '@/lib/types';
 import { getDecks, getCardsForDeck, saveCard, deleteCard } from '@/lib/storage';
 import { getApiKey, setApiKey, apiFetch } from '@/lib/apikey';
 
-type Tab = 'word' | 'photo';
+type Tab = 'word' | 'generic' | 'conjugation';
 
 export default function Home() {
   const [decks, setDecks] = useState<string[]>([]);
@@ -154,17 +154,21 @@ export default function Home() {
           <>
             {/* Tab switcher */}
             <div className="flex rounded-xl border border-gray-200 overflow-hidden bg-white">
-              {(['word', 'photo'] as Tab[]).map((t) => (
+              {([
+                { id: 'word', label: '✍️ Type text' },
+                { id: 'generic', label: '📸 Scan text' },
+                { id: 'conjugation', label: '📋 Conjugations' },
+              ] as { id: Tab; label: string }[]).map((t) => (
                 <button
-                  key={t}
-                  onClick={() => setTab(t)}
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
                   className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-                    tab === t
+                    tab === t.id
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  {t === 'word' ? 'Word / Expression' : 'Photo Scan'}
+                  {t.label}
                 </button>
               ))}
             </div>
@@ -173,7 +177,7 @@ export default function Home() {
             {tab === 'word' ? (
               <WordCardForm deckName={selectedDeck} onAdd={handleAdd} />
             ) : (
-              <PhotoCardForm deckName={selectedDeck} onAdd={handleAdd} />
+              <PhotoCardForm key={tab} mode={tab} deckName={selectedDeck} onAdd={handleAdd} />
             )}
 
             {/* Card queue */}
