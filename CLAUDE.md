@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# inanki — project guide for agents
+# inAnki — project guide for agents
 
 ## What this project is
 
@@ -106,5 +106,5 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 - [ ] Deploy to Vercel
 - [ ] Bulk delete cards from a deck
-- [ ] Dark mode for the inanki web UI
+- [ ] Dark mode for the inAnki web UI
 - [ ] PWA manifest / install-to-homescreen support

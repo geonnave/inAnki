@@ -15,7 +15,7 @@ export interface ScanResult {
 async function fetchGymglish(verb: string): Promise<Record<string, string[]>> {
   const url = `https://www.gymglish.com/fr/conjugaison/vatefaireconjuguer/verbe/${encodeURIComponent(verb.toLowerCase())}`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; inanki/1.0)' },
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; inAnki/1.0)' },
   });
   if (!res.ok) throw new Error(`gymglish returned ${res.status} for "${verb}"`);
   const html = await res.text();

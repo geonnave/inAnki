@@ -1,4 +1,4 @@
-# inanki
+# inAnki
 
 Scan life into Anki. A mobile-friendly web app for turning real-world content into Anki flashcard decks.
 

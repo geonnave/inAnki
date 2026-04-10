@@ -102,7 +102,7 @@ export default function Home() {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">inanki</h1>
+          <h1 className="text-2xl font-bold text-gray-900">inAnki</h1>
           <p className="text-sm text-gray-400 mt-0.5">Scan life into Anki</p>
         </div>
 

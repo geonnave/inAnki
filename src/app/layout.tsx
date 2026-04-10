@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "inanki",
+  title: "inAnki",
   description: "Scan life into Anki",
 };
 
