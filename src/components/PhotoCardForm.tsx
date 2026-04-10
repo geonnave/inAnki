@@ -299,7 +299,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-800">{item.front}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.back.split('\n')[0]}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.back.split('\n').slice(0, 2).join(' · ')}</p>
                     </div>
                   </label>
                 ))}

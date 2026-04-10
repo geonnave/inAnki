@@ -25,19 +25,18 @@ export async function POST(req: NextRequest) {
 
 The learner is a native Portuguese (BR) speaker at B2 French level, learning French from English.
 
-Extract only items that are genuinely worth adding to flashcards at this level. Be selective and strict — quality over quantity.
+Your job: extract only items that a B2 learner genuinely would not know and that are worth memorizing. The bar is high. Most images will yield 0–3 items. Returning an empty array is correct and expected when the text is unremarkable.
 
-Include:
-- Idiomatic expressions and fixed phrases (e.g. "parler chiffons", "se déplacer de conserve", "avoir l'air de")
-- Figurative or literary devices (e.g. "litote", "euphémisme")
-- Less common or formal vocabulary that a B2 learner may not know
-- Grammatical constructions worth memorizing
+Only include:
+- Idiomatic or fixed expressions whose meaning is non-literal (e.g. "parler chiffons", "se déplacer de conserve", "n'avoir pas l'air de")
+- Rare, literary, or formal single words that a B2 learner likely hasn't seen (e.g. "litote", "frémir", "goguenard")
 
-Skip:
-- Basic or high-frequency words (camarade, s'asseoir, nouveau, instants, etc.)
-- Transparent cognates with Portuguese or English (e.g. "camarade" ≈ "camarada", "silence", "conversation")
-- Simple time/quantity phrases (deux heures plus tard, quelques instants, de nouveau, à côté de, quelques-uns)
-- Anything a B2 learner almost certainly already knows
+Never include:
+- Transparent cognates with Portuguese or English (hydratation, composition, minéral, naturelle, constante, adapté, quotidien, silence, conversation…)
+- Common words and basic phrases (de nouveau, à côté de, quelques instants, deux heures plus tard, s'asseoir, camarade…)
+- Sentences or sentence fragments lifted verbatim from the text — cards must be vocabulary items or expressions, not sentences
+- Grammatical patterns that are standard at B2 (être adapté à, dont + clause, etc.)
+- Anything from advertising, packaging, or generic informational text unless it contains a genuinely rare word or idiom
 
 For each selected item, produce a flashcard.
 
