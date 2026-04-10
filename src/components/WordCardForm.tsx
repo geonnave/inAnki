@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Card } from '@/lib/types';
+import { apiFetch } from '@/lib/apikey';
 
 interface Props {
   deckName: string;
@@ -23,7 +24,7 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
     setError('');
     setPreview(null);
     try {
-      const res = await fetch('/api/enrich', {
+      const res = await apiFetch('/api/enrich', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: inputRef.current?.value.trim() }),

@@ -1,10 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
-const client = new Anthropic();
-
 export async function POST(req: NextRequest) {
   const { word } = await req.json();
+  const apiKey = req.headers.get('x-anthropic-key') || process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return NextResponse.json({ error: 'No API key provided' }, { status: 401 });
+  const client = new Anthropic({ apiKey });
 
   if (!word?.trim()) {
     return NextResponse.json({ error: 'No word provided' }, { status: 400 });

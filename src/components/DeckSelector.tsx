@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { saveDeck, saveCard, deleteDeck } from '@/lib/storage';
 import { Card } from '@/lib/types';
+import { apiFetch } from '@/lib/apikey';
 
 interface Props {
   decks: string[];
@@ -43,7 +44,7 @@ export default function DeckSelector({ decks, selected, onSelect, onDecksChange 
     setImportError('');
     try {
       const buf = await file.arrayBuffer();
-      const res = await fetch('/api/import', {
+      const res = await apiFetch('/api/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/octet-stream' },
         body: buf,

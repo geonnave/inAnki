@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Card } from '@/lib/types';
+import { apiFetch } from '@/lib/apikey';
 import { ScanResult, TenseResult } from '@/app/api/scan-conjugation/route';
 
 type PhotoMode = 'conjugation' | 'generic';
@@ -72,7 +73,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     try {
       let t = Date.now();
       addLog('Analysing photo...');
-      const detectRes = await fetch('/api/detect-verb', {
+      const detectRes = await apiFetch('/api/detect-verb', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageDataUrl }),
@@ -83,7 +84,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
 
       t = Date.now();
       addLog(`Found "${detected.verb}" — fetching conjugations...`);
-      const conjugateRes = await fetch('/api/scan-conjugation', {
+      const conjugateRes = await apiFetch('/api/scan-conjugation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verb: detected.verb, tenses: detected.tenses }),
@@ -120,7 +121,7 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     try {
       const t = Date.now();
       addLog('Analysing photo...');
-      const res = await fetch('/api/scan-text', {
+      const res = await apiFetch('/api/scan-text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageDataUrl }),

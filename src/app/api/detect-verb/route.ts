@@ -1,11 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
-const client = new Anthropic();
-
 export async function POST(req: NextRequest) {
   const { imageDataUrl } = await req.json();
   if (!imageDataUrl) return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+  const apiKey = req.headers.get('x-anthropic-key') || process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return NextResponse.json({ error: 'No API key provided' }, { status: 401 });
+  const client = new Anthropic({ apiKey });
 
   const base64 = imageDataUrl.split(',')[1];
   const mediaType = imageDataUrl.split(';')[0].split(':')[1] as 'image/jpeg' | 'image/png' | 'image/webp';

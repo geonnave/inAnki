@@ -75,6 +75,7 @@ interface Card {
 - `Promise.withResolvers` polyfill required for iOS < 17.4 (added inline in `layout.tsx`)
 - Uncontrolled inputs (`ref`) used throughout — controlled inputs caused mobile reliability issues
 - `sql-wasm.wasm` must be in `public/`, read via `readFileSync(join(process.cwd(), 'public/sql-wasm.wasm'))`
+- **Mobile dev access**: `allowedDevOrigins` in `next.config.ts` must include the Mac's current LAN IP. Without this, the dev server silently breaks on mobile (buttons stop working). Update when IP changes.
 
 ## Environment variables
 
@@ -99,9 +100,11 @@ ANTHROPIC_API_KEY=sk-ant-...
 - [x] iOS input zoom fix (`font-size: max(16px, 1em)` in globals.css)
 - [x] Anki card dark mode CSS (`prefers-color-scheme: dark`)
 - [x] Generic photo scan mode — Claude vision extracts idioms/rare vocab from any French text photo, tuned for B2 PT-BR learner (strict prompt, empty result is valid)
+- [x] User-provided Anthropic API key — visit `/?k=sk-ant-...` to set; stored in localStorage, stripped from URL; key prompt shown on first visit; all API routes accept `x-anthropic-key` header with fallback to env var
 
 ## To do
 
+- [ ] Deploy to Vercel
 - [ ] Bulk delete cards from a deck
 - [ ] Dark mode for the inanki web UI
 - [ ] PWA manifest / install-to-homescreen support
