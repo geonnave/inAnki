@@ -85,26 +85,8 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 ## Done
 
-- [x] Word/expression card creation with Claude enrichment (EN + PT-BR translations + example)
-- [x] Export deck as `.apkg` (sql.js + jszip, no native deps)
-- [x] Mobile-friendly UI; fixed iOS hydration bug (Promise.withResolvers polyfill)
-- [x] Photo scan — conjugation mode: camera → Claude vision → gymglish ground truth → multiple cards
-- [x] Conjugation table formatting (two-column, pronoun/form, handles elision like j'/qu')
-- [x] Gender variant normalisation in gymglish scraper (il/elle, allé(e), allés(es))
-- [x] Progress log UI during photo scan (terminal-style dark panel)
-- [x] Verb + tense tags on conjugation cards
-- [x] Import `.apkg` — parses SQLite, restores cards with original note IDs (Anki progress preserved)
-- [x] Delete deck (with inline confirmation)
-- [x] Edit existing cards inline (pencil icon; read-only back preview for imported cards)
-- [x] Imported card badge in card queue
-- [x] iOS input zoom fix (`font-size: max(16px, 1em)` in globals.css)
-- [x] Anki card dark mode CSS (`prefers-color-scheme: dark`)
-- [x] Generic photo scan mode — Claude vision extracts idioms/rare vocab from any French text photo, tuned for B2 PT-BR learner (strict prompt, empty result is valid)
-- [x] User-provided Anthropic API key — visit `/?k=sk-ant-...` to set; stored in localStorage, stripped from URL; key prompt shown on first visit; all API routes accept `x-anthropic-key` header with fallback to env var
-
-## To do
-
-- [ ] Deploy to Vercel
-- [ ] Bulk delete cards from a deck
-- [ ] Dark mode for the inAnki web UI
-- [ ] PWA manifest / install-to-homescreen support
+- [x] Card creation: type a word (Claude enrichment) or scan a photo (conjugation table or generic French text)
+- [x] Export / import `.apkg` with Anki progress preserved (original note IDs)
+- [x] Deck management: create, select, delete, import
+- [x] Card management: edit inline, delete, imported badge
+- [x] Deployed to Vercel Hobby — Claude runs client-side (user brings their own API key via `/?k=`)
