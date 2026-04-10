@@ -23,9 +23,23 @@ export async function POST(req: NextRequest) {
             type: 'text',
             text: `Analyze this image. It may contain French text (a sign, menu, page, handwritten note, etc.).
 
-Extract French words or expressions that are worth learning as vocabulary for an intermediate learner. Skip very basic words (articles like le/la/les, basic prepositions like de/à/en, conjunctions like et/ou, etc.).
+The learner is a native Portuguese (BR) speaker at B2 French level, learning French from English.
 
-For each item worth learning, produce a flashcard. The learner is a native Portuguese (BR) speaker learning French from English.
+Extract only items that are genuinely worth adding to flashcards at this level. Be selective and strict — quality over quantity.
+
+Include:
+- Idiomatic expressions and fixed phrases (e.g. "parler chiffons", "se déplacer de conserve", "avoir l'air de")
+- Figurative or literary devices (e.g. "litote", "euphémisme")
+- Less common or formal vocabulary that a B2 learner may not know
+- Grammatical constructions worth memorizing
+
+Skip:
+- Basic or high-frequency words (camarade, s'asseoir, nouveau, instants, etc.)
+- Transparent cognates with Portuguese or English (e.g. "camarade" ≈ "camarada", "silence", "conversation")
+- Simple time/quantity phrases (deux heures plus tard, quelques instants, de nouveau, à côté de, quelques-uns)
+- Anything a B2 learner almost certainly already knows
+
+For each selected item, produce a flashcard.
 
 Respond with ONLY a JSON object (no markdown):
 {
@@ -37,7 +51,7 @@ Respond with ONLY a JSON object (no markdown):
   ]
 }
 
-If no learnable French content is found in the image, return { "items": [] }.`,
+If nothing meets the bar, return { "items": [] }.`,
           },
         ],
       }],
