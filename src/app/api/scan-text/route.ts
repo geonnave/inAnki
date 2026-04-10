@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const maxDuration = 120;
+
 export async function POST(req: NextRequest) {
   const { imageDataUrl } = await req.json();
   if (!imageDataUrl) return NextResponse.json({ error: 'No image provided' }, { status: 400 });

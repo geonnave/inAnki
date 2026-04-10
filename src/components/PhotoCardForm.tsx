@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import Anthropic from '@anthropic-ai/sdk';
 import { Card } from '@/lib/types';
-import { apiFetch } from '@/lib/apikey';
+import { getApiKey, apiFetch } from '@/lib/apikey';
 import { ScanResult, TenseResult } from '@/app/api/scan-conjugation/route';
 
 type PhotoMode = 'conjugation' | 'generic';
@@ -73,13 +74,33 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     try {
       let t = Date.now();
       addLog('Analysing photo...');
-      const detectRes = await apiFetch('/api/detect-verb', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageDataUrl }),
+      const client = new Anthropic({ apiKey: getApiKey()!, dangerouslyAllowBrowser: true });
+      const base64 = imageDataUrl.split(',')[1];
+      const mediaType = imageDataUrl.split(';')[0].split(':')[1] as 'image/jpeg' | 'image/png' | 'image/webp';
+      const detectMsg = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 256,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: `This is a handwritten French verb conjugation sheet.
+Identify the verb and the list of tenses present.
+If words are crossed out and corrected, use the corrected version.
+
+Respond with ONLY a JSON object (no markdown):
+{
+  "verb": "<infinitive form>",
+  "tenses": ["<tense 1>", "<tense 2>", ...]
+}
+
+Use these exact tense names when applicable:
+indicatif présent, indicatif imparfait, indicatif passé composé, indicatif futur simple, futur proche, conditionnel présent, subjonctif présent` },
+          ],
+        }],
       });
-      const detected = await detectRes.json();
-      if (detected.error) throw new Error(detected.error);
+      const detectRaw = detectMsg.content[0].type === 'text' ? detectMsg.content[0].text : '';
+      const detected = JSON.parse(detectRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim());
       completeLog(Math.round((Date.now() - t) / 100) / 10);
 
       t = Date.now();
@@ -121,13 +142,51 @@ export default function PhotoCardForm({ deckName, onAdd }: Props) {
     try {
       const t = Date.now();
       addLog('Analysing photo...');
-      const res = await apiFetch('/api/scan-text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageDataUrl }),
+      const client = new Anthropic({ apiKey: getApiKey()!, dangerouslyAllowBrowser: true });
+      const base64 = imageDataUrl.split(',')[1];
+      const mediaType = imageDataUrl.split(';')[0].split(':')[1] as 'image/jpeg' | 'image/png' | 'image/webp';
+      const scanMsg = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: `Analyze this image. It may contain French text (a sign, menu, page, handwritten note, etc.).
+
+The learner is a native Portuguese (BR) speaker at B2 French level, learning French from English.
+
+Your job: extract only items that a B2 learner genuinely would not know and that are worth memorizing. The bar is high. Most images will yield 0–3 items. Returning an empty array is correct and expected when the text is unremarkable.
+
+Only include:
+- Idiomatic or fixed expressions whose meaning is non-literal (e.g. "parler chiffons", "se déplacer de conserve", "n'avoir pas l'air de")
+- Rare, literary, or formal single words that a B2 learner likely hasn't seen (e.g. "litote", "frémir", "goguenard")
+
+Never include:
+- Transparent cognates with Portuguese or English (hydratation, composition, minéral, naturelle, constante, adapté, quotidien, silence, conversation…)
+- Common words and basic phrases (de nouveau, à côté de, quelques instants, deux heures plus tard, s'asseoir, camarade…)
+- Sentences or sentence fragments lifted verbatim from the text — cards must be vocabulary items or expressions, not sentences
+- Grammatical patterns that are standard at B2 (être adapté à, dont + clause, etc.)
+- Anything from advertising, packaging, or generic informational text unless it contains a genuinely rare word or idiom
+
+For each selected item, produce a flashcard.
+
+Respond with ONLY a JSON object (no markdown):
+{
+  "items": [
+    {
+      "front": "<French word or expression>",
+      "back": "🇺🇸 <English translation>\\n🇧🇷 <Portuguese (BR) translation>\\n\\nExample: <short French example sentence (English translation in parentheses)>"
+    }
+  ]
+}
+
+If nothing meets the bar, return { "items": [] }.` },
+          ],
+        }],
       });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const scanRaw = scanMsg.content[0].type === 'text' ? scanMsg.content[0].text : '';
+      const data = JSON.parse(scanRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim());
       completeLog(Math.round((Date.now() - t) / 100) / 10);
 
       const items: { front: string; back: string }[] = data.items ?? [];

@@ -2,8 +2,9 @@
 
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import Anthropic from '@anthropic-ai/sdk';
 import { Card } from '@/lib/types';
-import { apiFetch } from '@/lib/apikey';
+import { getApiKey } from '@/lib/apikey';
 
 interface Props {
   deckName: string;
@@ -24,14 +25,26 @@ export default function WordCardForm({ deckName, onAdd }: Props) {
     setError('');
     setPreview(null);
     try {
-      const res = await apiFetch('/api/enrich', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: inputRef.current?.value.trim() }),
+      const client = new Anthropic({ apiKey: getApiKey()!, dangerouslyAllowBrowser: true });
+      const message = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{
+          role: 'user',
+          content: `You are a French language teacher. Given a French word or expression, produce a flashcard.
+
+Word: "${word}"
+
+Respond with ONLY a JSON object (no markdown, no explanation):
+{
+  "front": "<the French word or expression>",
+  "back": "🇺🇸 <English translation>\\n🇧🇷 <Portuguese (BR) translation>\\n\\nExample: <one short example sentence in French with English translation in parentheses>"
+}`,
+        }],
       });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setPreview(data);
+      const raw = message.content[0].type === 'text' ? message.content[0].text : '';
+      const text = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+      setPreview(JSON.parse(text));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { parse } from 'node-html-parser';
 
 export interface TenseResult {
